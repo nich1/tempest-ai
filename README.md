@@ -1,4 +1,6 @@
-# tempest-ai
+<p align="center">
+  <img src="./assets/logo.png" alt="Tempest AI Logo" width="220" />
+</p>
 
 A small, distributed LLM schema manager built to demo enterprise-shaped
 backend architecture: async processing, competing consumers, horizontal
