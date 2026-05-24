@@ -2,13 +2,11 @@
   <img src="./assets/logo.png" alt="Tempest AI Logo" width="220" />
 </p>
 
-A small, distributed LLM schema manager built to demo enterprise-shaped
-backend architecture: async processing, competing consumers, horizontal
-scaling, queue-based workloads, structured logging, and clean service
-boundaries.
+Tempest AI is an open source, light-weight, scalable microservice environment for providing structured LLM calls. 
+Providing the structure of the input and response along with the input values yields a structured, typed response from the LLM.
 
-You define an input/output schema and a prompt, optionally attach a file,
-and submit a job. The API persists metadata, enqueues the work, and
+
+The API persists metadata, enqueues the work, and
 returns immediately. A pool of horizontally-scaled Go consumers pulls
 tasks off Redis (via Asynq), runs them through a pluggable LLM provider
 (Ollama / OpenAI / Anthropic / Gemini), validates the response against
