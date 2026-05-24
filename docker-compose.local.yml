@@ -1,0 +1,75 @@
+# Local dev overrides. Apply on top of docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up
+#
+# Or via Makefile:  make dev
+#
+# Differences vs the prod-like stack:
+#   - Postgres/Redis/MinIO ports are exposed on the host so you can
+#     point IDE tools / mc / redis-cli at them.
+#   - api / consumers / web build dev images that hot-reload (air, next dev)
+#     and bind-mount the source tree.
+#   - api gets its port published.
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+
+  redis:
+    ports:
+      - "6379:6379"
+
+  minio:
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.dev.Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/src
+      - go-cache:/root/.cache/go-build
+      - go-mod:/go/pkg/mod
+    working_dir: /src
+    environment:
+      API_ENV: dev
+    # Maps host.docker.internal -> the Linux host so containers can
+    # reach services running natively (e.g. Ollama on :11434).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  consumers:
+    build:
+      context: .
+      dockerfile: docker/consumers.dev.Dockerfile
+    volumes:
+      - .:/src
+      - go-cache:/root/.cache/go-build
+      - go-mod:/go/pkg/mod
+    working_dir: /src
+    environment:
+      API_ENV: dev
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.dev.Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8080
+
+volumes:
+  go-cache:
+  go-mod:

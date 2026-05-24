@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0b0d10;
+  --fg: #e6e8ec;
+  --muted: #8b94a3;
+  --accent: #7c8cff;
+  --card: #14181d;
+  --border: #20262e;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+body {
+  /* Inter character variants for sharper, more geometric glyphs */
+  font-feature-settings: "cv11", "ss01", "ss03";
+  letter-spacing: -0.005em;
+}
+
+a {
+  color: var(--accent);
+}

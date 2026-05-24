@@ -1,0 +1,404 @@
+basePath: /
+definitions:
+  github_com_nich1_tempest-ai_internal_models.AuthResponse:
+    properties:
+      user:
+        $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.UserDTO'
+    type: object
+  github_com_nich1_tempest-ai_internal_models.CreateJobRequest:
+    properties:
+      file_blob_key:
+        type: string
+      input_schema:
+        items:
+          type: integer
+        type: array
+      inputs:
+        items:
+          type: integer
+        type: array
+      output_schema:
+        items:
+          type: integer
+        type: array
+      prompt:
+        type: string
+      provider:
+        description: |-
+          Provider format: "<provider>:<model>". E.g. "ollama:llama3:8b" or
+          "anthropic:claude-3-5-sonnet-20241022". If empty, server substitutes
+          LLM_PROVIDER_DEFAULT:LLM_MODEL_DEFAULT.
+        type: string
+      system_prompt:
+        type: string
+    required:
+    - input_schema
+    - inputs
+    - output_schema
+    - prompt
+    type: object
+  github_com_nich1_tempest-ai_internal_models.ErrorResponse:
+    properties:
+      error:
+        example: invalid credentials
+        type: string
+      request_id:
+        example: 01h...
+        type: string
+    type: object
+  github_com_nich1_tempest-ai_internal_models.FileUploadURLRequest:
+    properties:
+      content_type:
+        type: string
+      size_bytes:
+        minimum: 1
+        type: integer
+    required:
+    - content_type
+    - size_bytes
+    type: object
+  github_com_nich1_tempest-ai_internal_models.FileUploadURLResponse:
+    properties:
+      blob_key:
+        type: string
+      expires_in_seconds:
+        type: integer
+      max_size_bytes:
+        type: integer
+      upload_url:
+        type: string
+    type: object
+  github_com_nich1_tempest-ai_internal_models.JobDTO:
+    properties:
+      attempt:
+        type: integer
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      error_message:
+        type: string
+      file_blob_content_type:
+        type: string
+      file_blob_key:
+        type: string
+      file_blob_size:
+        type: integer
+      id:
+        type: string
+      input_schema:
+        items:
+          type: integer
+        type: array
+      inputs:
+        items:
+          type: integer
+        type: array
+      output:
+        items:
+          type: integer
+        type: array
+      output_schema:
+        items:
+          type: integer
+        type: array
+      prompt:
+        type: string
+      provider:
+        type: string
+      started_at:
+        type: string
+      status:
+        $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.JobStatus'
+      system_prompt:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_nich1_tempest-ai_internal_models.JobListResponse:
+    properties:
+      jobs:
+        items:
+          $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.JobDTO'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total_count:
+        type: integer
+    type: object
+  github_com_nich1_tempest-ai_internal_models.JobStatus:
+    enum:
+    - PENDING
+    - PROCESSING
+    - COMPLETED
+    - FAILED
+    type: string
+    x-enum-varnames:
+    - JobStatusPending
+    - JobStatusProcessing
+    - JobStatusCompleted
+    - JobStatusFailed
+  github_com_nich1_tempest-ai_internal_models.LoginRequest:
+    properties:
+      email:
+        example: alice@example.com
+        type: string
+      password:
+        example: correct horse battery staple
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  github_com_nich1_tempest-ai_internal_models.SignupRequest:
+    properties:
+      email:
+        example: alice@example.com
+        type: string
+      password:
+        example: correct horse battery staple
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  github_com_nich1_tempest-ai_internal_models.UserDTO:
+    properties:
+      created_at:
+        type: string
+      email:
+        example: alice@example.com
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+info:
+  contact: {}
+  description: LLM schema manager - submit jobs that run user-defined input/output
+    schemas through any of the configured LLM providers.
+  title: Tempest AI API
+  version: "0.1"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate and start a new session.
+      parameters:
+      - description: Login payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.ErrorResponse'
+      summary: Log in
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      description: Revoke the current session and clear the cookie.
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Log out
+      tags:
+      - auth
+  /auth/me:
+    get:
+      description: Return the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.UserDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.ErrorResponse'
+      summary: Current user
+      tags:
+      - auth
+  /auth/signup:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account and start a session.
+      parameters:
+      - description: Signup payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.SignupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.ErrorResponse'
+      summary: Sign up
+      tags:
+      - auth
+  /health:
+    get:
+      description: Pings Postgres, Redis (Asynq), and MinIO; returns per-dependency
+        status and queue depth.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Health check
+      tags:
+      - health
+  /jobs:
+    get:
+      parameters:
+      - description: Max items (1-100)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.JobListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.ErrorResponse'
+      summary: List jobs
+      tags:
+      - jobs
+    post:
+      consumes:
+      - application/json
+      description: Submit an LLM extraction job. Schemas, inputs, and prompts are
+        validated up-front.
+      parameters:
+      - description: Job request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.CreateJobRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.JobDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.ErrorResponse'
+      summary: Submit job
+      tags:
+      - jobs
+  /jobs/{id}:
+    get:
+      parameters:
+      - description: Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.JobDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.ErrorResponse'
+      summary: Get job
+      tags:
+      - jobs
+  /jobs/file-upload-url:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: File metadata
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.FileUploadURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.FileUploadURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nich1_tempest-ai_internal_models.ErrorResponse'
+      summary: Mint upload URL
+      tags:
+      - jobs
+swagger: "2.0"

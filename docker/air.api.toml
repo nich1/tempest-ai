@@ -1,0 +1,12 @@
+root = "/src"
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -buildvcs=false -o /tmp/api ./apps/api"
+  bin = "/tmp/api"
+  include_ext = ["go"]
+  exclude_dir = ["tmp", "apps/web", "node_modules", "docs"]
+  delay = 500
+
+[log]
+  time = true
